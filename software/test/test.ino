@@ -1,5 +1,5 @@
-#define X_RANGE_STEPS 1950
-#define Y_RANGE_STEPS 2400
+#define X_RANGE_STEPS 1900
+#define Y_RANGE_STEPS 2350
 
 #define dirA 13
 #define stepA 12
@@ -7,15 +7,17 @@
 #define stepB 10
 #define stopX A0
 #define stopY A1
+#define magnet 9
 
 enum AXIS { X, Y };
 
+void zero();
+void zeroAxis(AXIS axis);
+void moveTo(int newX, int newY);
+void moveSteps(AXIS axis, int steps);
+
 int curX = 0;
 int curY = 0;
-
-void zero();
-void moveSteps(AXIS axis, int steps);
-void moveTo(int newX, int newY);
 
 void setup() {
   Serial.begin(9600);
@@ -44,20 +46,27 @@ void loop() {
 }
 
 void zero() {
-  digitalWrite(dirA, HIGH);
-  digitalWrite(dirB, HIGH);
-  while (digitalRead(stopX)) {
-    digitalWrite(stepA, HIGH);
-    digitalWrite(stepB, HIGH);
-    delay(1);
-    digitalWrite(stepA, LOW);
-    digitalWrite(stepB, LOW);
-    delay(1);
+  zeroAxis(X);
+  zeroAxis(Y);
+}
+
+void zeroAxis(AXIS axis) {
+  // Depending on axis being zeroed, set motor directions
+  // and endstop pin. Reset current position variable
+  int stopPin = 0;
+  if (axis == X) {
+    digitalWrite(dirA, HIGH);
+    digitalWrite(dirB, HIGH);
+    stopPin = stopX;
+    curX = 0;
+  } else if (axis == Y) {
+    digitalWrite(dirA, LOW);
+    digitalWrite(dirB, HIGH);
+    stopPin = stopY;
+    curY = 0;
   }
-  
-  digitalWrite(dirA, LOW);
-  digitalWrite(dirB, HIGH);
-  while (digitalRead(stopY)) {
+  // Move until switch is activated
+  while (digitalRead(stopPin)) {
     digitalWrite(stepA, HIGH);
     digitalWrite(stepB, HIGH);
     delay(1);
@@ -68,17 +77,24 @@ void zero() {
 }
 
 void moveTo(int newX, int newY) {
+  // Clamp coordinates to valid range (0 to max range)
+  newX = max(min(newX, X_RANGE_STEPS), 0);
+  newY = max(min(newY, Y_RANGE_STEPS), 0);
+  // Move to desired location
   moveSteps(X, newX - curX);
   moveSteps(Y, newY - curY);
+  // Update current position
   curX = newX;
   curY = newY;
 }
 
 void moveSteps(AXIS axis, int steps) {
+  // Set stepper motor directions
   digitalWrite(dirB, steps < 0);
   digitalWrite(dirA,
       (axis == Y && steps > 0) || (axis == X && steps < 0));
       
+  // Pulse given number of steps
   for (int i = 0; i < abs(steps); i++) {
     digitalWrite(stepA, HIGH);
     digitalWrite(stepB, HIGH);
