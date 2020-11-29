@@ -26,6 +26,9 @@ void setup() {
   pinMode(stepA, OUTPUT);
   pinMode(dirB, OUTPUT);
   pinMode(stepB, OUTPUT);
+  
+  pinMode(magnet, OUTPUT);
+  digitalWrite(magnet, LOW);
 
   pinMode(stopX, INPUT);
   pinMode(stopY, INPUT);
@@ -36,11 +39,17 @@ void setup() {
 void loop() {
   while (true) {
     if (Serial.available()) {
-      float x = Serial.parseFloat();
-      float y = Serial.parseFloat();
-      char r = Serial.read();
-      if (r != '\n') continue;
-      moveTo(x*X_RANGE_STEPS, y*Y_RANGE_STEPS);
+      char r = Serial.read(); // prefix
+      if (r == 'm') { // magnet on/off
+        int on = Serial.parseInt();
+        if (Serial.read() != '\n') continue; // valid EOL
+        digitalWrite(magnet, on);
+      } else if (r == 'x') { // coordinate
+        float x = Serial.parseFloat();
+        float y = Serial.parseFloat();
+        if (Serial.read() != '\n') continue; // valid EOL
+        moveTo(x*X_RANGE_STEPS, y*Y_RANGE_STEPS);
+      }
     }
   }
 }
