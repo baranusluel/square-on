@@ -1,2 +1,2 @@
 # square-on
-Open-source version of Square Off, an automatic chess board
+Open-source version of Square Off, a chess board robot
