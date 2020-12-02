@@ -1,12 +1,12 @@
 #define X_RANGE_STEPS 1900
 #define Y_RANGE_STEPS 2350
 
-#define dirA 13
-#define stepA 12
-#define dirB 11
-#define stepB 10
-#define stopX A0
-#define stopY A1
+#define stepB 2
+#define dirB 4
+#define stepA 3
+#define dirA 5
+#define stopX 6
+#define stopY 7
 #define magnet 9
 
 enum AXIS { X, Y };
@@ -113,3 +113,4 @@ void moveSteps(AXIS axis, int steps) {
     delay(1);
   }
 }
+
