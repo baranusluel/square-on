@@ -1,5 +1,6 @@
 #define X_RANGE_STEPS 1900
 #define Y_RANGE_STEPS 2350
+#define speedMicros 500
 
 #define stepB 2
 #define dirB 4
@@ -78,10 +79,10 @@ void zeroAxis(AXIS axis) {
   while (digitalRead(stopPin)) {
     digitalWrite(stepA, HIGH);
     digitalWrite(stepB, HIGH);
-    delay(1);
+    delayMicroseconds(speedMicros);
     digitalWrite(stepA, LOW);
     digitalWrite(stepB, LOW);
-    delay(1);
+    delayMicroseconds(speedMicros);
   }
 }
 
@@ -107,10 +108,10 @@ void moveSteps(AXIS axis, int steps) {
   for (int i = 0; i < abs(steps); i++) {
     digitalWrite(stepA, HIGH);
     digitalWrite(stepB, HIGH);
-    delay(1);
+    delayMicroseconds(speedMicros);
     digitalWrite(stepA, LOW);
     digitalWrite(stepB, LOW);
-    delay(1);
+    delayMicroseconds(speedMicros);
   }
 }
 
