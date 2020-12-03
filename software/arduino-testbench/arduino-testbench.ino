@@ -1,5 +1,5 @@
-#define X_RANGE_STEPS 1900
-#define Y_RANGE_STEPS 2350
+#define X_RANGE_STEPS 1900*4
+#define Y_RANGE_STEPS 2350*4
 #define speedMicros 500
 
 #define stepB 2

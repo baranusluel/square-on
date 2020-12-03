@@ -1,7 +1,7 @@
 /// CONSTANTS
 // ROM of robot in steps
-#define X_RANGE_STEPS 1900
-#define Y_RANGE_STEPS 2350
+#define X_RANGE_STEPS 1900*4
+#define Y_RANGE_STEPS 2350*4
 // Speed of robot, as delay between steps
 #define speedMicros 500
 
@@ -51,6 +51,7 @@ void zero();
 void zeroAxis(AXIS axis);
 void moveTo(int newX, int newY);
 void moveSteps(AXIS axis, int steps);
+void moveToSquare(int col, int row);
 void copyBoard(char fromBoard[8][8], char toBoard[8][8]);
 void scanBoardChanges();
 
@@ -77,6 +78,7 @@ void loop() {
   while (true) {
     if (Serial.available()) {
       String cmd = Serial.readStringUntil('\n');
+      Serial.println(cmd);
       if (cmd == "new") {
         Serial.println("new ack");
         // Assume player manually resets pieces
@@ -85,8 +87,8 @@ void loop() {
         Serial.println("board ack");
         // Read new board state into buffer
         for (int r = 0; r < 8; r++) {
-          while (!Serial.available()) {}
           String row = Serial.readStringUntil('\n');
+          Serial.println(row);
           for (int c = 0; c < 8; c++) {
             newBoard[r][c] = row[c*2];
           }
@@ -94,21 +96,10 @@ void loop() {
         // Identify different between current and new board,
         // make the necessary chess move.
         scanBoardChanges();
+        Serial.println("done");
       } else {
         Serial.println("what?");
       }
-      
-//      char r = Serial.read(); // prefix
-//      if (r == 'm') { // magnet on/off
-//        int on = Serial.parseInt();
-//        if (Serial.read() != '\n') continue; // valid EOL
-//        digitalWrite(magnet, on);
-//      } else if (r == 'x') { // coordinate
-//        float x = Serial.parseFloat();
-//        float y = Serial.parseFloat();
-//        if (Serial.read() != '\n') continue; // valid EOL
-//        moveTo(x*X_RANGE_STEPS, y*Y_RANGE_STEPS);
-//      }
     }
   }
 }
@@ -175,6 +166,11 @@ void moveSteps(AXIS axis, int steps) {
   }
 }
 
+void moveToSquare(int col, int row) {
+  moveTo((float)col/7.0*X_RANGE_STEPS,
+         ((7-row)*(0.9-0.04)/7.0+0.04)*Y_RANGE_STEPS);
+}
+
 void copyBoard(char fromBoard[8][8], char toBoard[8][8]) {
   memcpy(toBoard, fromBoard, sizeof(fromBoard[0][0])*64);
 }
@@ -225,13 +221,22 @@ void scanBoardChanges() {
       || move.toRow < 0 || move.toCol < 0)
     return;
   
-  // TODO: Make move
   Serial.print(move.piece);
   Serial.print(move.pieceCaptured);
   Serial.print(move.fromRow);
   Serial.print(move.fromCol);
   Serial.print(move.toRow);
   Serial.println(move.toCol);
+
+  Serial.println("moving");
+  moveToSquare(move.fromCol, move.fromRow);
+  delay(100);
+  digitalWrite(magnet, HIGH);
+  delay(100);
+  moveToSquare(move.toCol, move.toRow);
+  delay(100);
+  digitalWrite(magnet, LOW);
+  delay(100);
 
   // Update current board buffer
   copyBoard(newBoard, currentBoard);
