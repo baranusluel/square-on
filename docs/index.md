@@ -2,6 +2,8 @@
 
 #### Authors: Baran Usluel, Mark Faingold, Christian Butticaz
 
+#### [Source Code](https://github.com/baranusluel/square-on/tree/main/software)
+
 ## Overview
 
 We built a chess-playing robot. It drags pieces with an electromagnet under the board. Players can interface with it through a web UI. It is big. We had to make it big to make sure that the knights could move in between other pieces. 
@@ -74,9 +76,9 @@ Our original vision included a human player moving their pieces by hand and a ro
 Although sound in theory, this plan did not work out in practice. The pieces failed to make reliable connections with both the row and column tape pieces, so we couldn’t always get an accurate reading of the players position. This forced us to readjust our vision. We pivoted to a web-based interface where the human player can make moves against the machine and see both their moves and the machine’s moves reflected on the physical chessboard. Now, we had no problems obtaining the board state since it was inputted through a web GUI and stored on the server. 
 
 ### Software
-The human player interacts with the system through a web chess interface which runs on a Python Flask backend hosted on the Raspberry Pi. We leveraged an existing open source project for the chess front end and server. Beside receiving updates from the UI and maintaining the board state, the server also runs a Stockfish 12 engine which means that our chess board can dominate the strongest grandmasters in the world. 
+The human player interacts with the system through a web chess interface which runs on a Python Flask backend hosted on the Raspberry Pi. We leveraged an existing [open source project](https://github.com/baranusluel/flask-chess-platform/) for the chess front end and server, modifying it to send data over Serial to the Arduino. Beside receiving updates from the UI and maintaining the board state, the server also runs a Stockfish 12 engine which means that our chess board can dominate the strongest grandmasters in the world. 
 
-On every move, the Pi sends an updated board state to the Arduino over a serial connection. Arduino interprets the new state and decides what pieces need to be physically moved. It then deduces how to move the actuator and activate the electromagnet. It also accounts for the edge cases in the removal of captured pieces, knight movements and diagonal movements (e.g. bishop) ensuring that there are no collisions. 
+On every move, the Pi sends an updated board state to the Arduino over a serial connection. Our [Arduino controller software](https://github.com/baranusluel/square-on/blob/main/software/arduino-controller/arduino-controller.ino) interprets the new state and decides what pieces need to be physically moved. It then deduces how to move the actuator and activate the electromagnet. It also accounts for the edge cases in the removal of captured pieces, knight movements and diagonal movements (e.g. bishop) ensuring that there are no collisions. 
 
 Although it could be feasible to interface with the peripherals from the Pi directly, we chose to use an Arduino as a broker because the non-RTOS Linux OS running on the Pi could potentially be too slow to pulse the stepper motors at an appropriate and consistent rate. Ensuring the fluid motion of the pieces required precise I/O time requirements of 250 μs. 
 
