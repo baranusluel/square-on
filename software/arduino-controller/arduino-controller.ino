@@ -16,8 +16,11 @@
 // Electromagnet pin
 #define magnet 9
 
-// Axis symbols
-enum AXIS { X, Y };
+// Axis/direction symbols:
+// X is horizontal, Y is vertical,
+// main diagonal is / direction (from origin),
+// anti diagonal is \ direction.
+enum AXIS { X, Y, MAIN_DIAG, ANTI_DIAG};
 
 // Board state buffers
 char initialBoard[8][8] = {{'r','n','b','q','k','b','n','r'},
@@ -49,9 +52,9 @@ int curY = 0;
 
 void zero();
 void zeroAxis(AXIS axis);
-void moveTo(int newX, int newY);
-void moveSteps(AXIS axis, int steps);
-void moveToSquare(int col, int row);
+void moveTo(int newX, int newY, int speedDelay);
+void moveSteps(AXIS axis, int steps, int speedDelay);
+void moveToSquare(int col, int row, int speedDelay);
 void copyBoard(char fromBoard[8][8], char toBoard[8][8]);
 void scanBoardChanges();
 
@@ -137,38 +140,62 @@ void zeroAxis(AXIS axis) {
   }
 }
 
-void moveTo(int newX, int newY) {
+void moveTo(int newX, int newY, int speedDelay) {
   // Clamp coordinates to valid range (0 to max range)
   newX = max(min(newX, X_RANGE_STEPS), 0);
   newY = max(min(newY, Y_RANGE_STEPS), 0);
   // Move to desired location
-  moveSteps(X, newX - curX);
-  moveSteps(Y, newY - curY);
+  if (abs(newX - curX) == abs(newY - curY)) {
+    // If perfectly diagonal motion, just move diagonally
+    if (newX - curX == newY - curY) // If same sign
+      moveSteps(MAIN_DIAG, 2*(newX - curX), speedDelay);
+    else // Opposite signs
+      moveSteps(ANTI_DIAG, 2*(newX - curX), speedDelay);
+  } else {
+    // Otherwise move in X and Y separately, Manhattan-distance
+    moveSteps(X, newX - curX, speedDelay);
+    moveSteps(Y, newY - curY, speedDelay);
+  }
   // Update current position
   curX = newX;
   curY = newY;
 }
 
-void moveSteps(AXIS axis, int steps) {
+void moveSteps(AXIS axis, int steps, int speedDelay) {
   // Set stepper motor directions
-  digitalWrite(dirB, steps < 0);
-  digitalWrite(dirA,
-      (axis == Y && steps > 0) || (axis == X && steps < 0));
+  switch (axis) {
+    case X:
+      digitalWrite(dirB, steps < 0);
+      digitalWrite(dirA, steps < 0);
+      break;
+    case Y:
+      digitalWrite(dirB, steps < 0);
+      digitalWrite(dirA, steps > 0);
+      break;
+    case MAIN_DIAG:
+      digitalWrite(dirB, steps < 0);
+      break;
+    case ANTI_DIAG:
+      digitalWrite(dirA, steps < 0);
+      break;
+  }
       
   // Pulse given number of steps
   for (int i = 0; i < abs(steps); i++) {
-    digitalWrite(stepA, HIGH);
-    digitalWrite(stepB, HIGH);
-    delayMicroseconds(speedMicros);
+    digitalWrite(stepA, axis != MAIN_DIAG ? HIGH : LOW);
+    digitalWrite(stepB, axis != ANTI_DIAG ? HIGH : LOW);
+    delayMicroseconds(speedDelay);
     digitalWrite(stepA, LOW);
     digitalWrite(stepB, LOW);
-    delayMicroseconds(speedMicros);
+    delayMicroseconds(speedDelay);
   }
 }
 
-void moveToSquare(int col, int row) {
-  moveTo((float)col*1140-100 /* approximately X_RANGE_STEPS/7.0 */,
-         (7-row)*1140+376); /* approximately (0.9-0.04)/7.0*Y_RANGE_STEPS */
+void moveToSquare(int col, int row, int speedDelay) {
+  // Calibrated empirically according to square spacing and offsets on board
+  moveTo(col*1140-100,
+         (7-row)*1140+376, /* approximately (0.9-0.04)/7.0*Y_RANGE_STEPS */
+         speedDelay);
 }
 
 void copyBoard(char fromBoard[8][8], char toBoard[8][8]) {
@@ -232,19 +259,19 @@ void scanBoardChanges() {
 
   Serial.println("moving");
   if (move.pieceCaptured != 0) {
-    moveToSquare(move.toCol, move.toRow);
+    moveToSquare(move.toCol, move.toRow, speedMicros/2);
     delay(100);
     digitalWrite(magnet, HIGH);
-    moveTo(curX, Y_RANGE_STEPS); // Go to top of board
-    moveTo(X_RANGE_STEPS, Y_RANGE_STEPS); // Top right corner
+    moveTo(curX, Y_RANGE_STEPS, speedMicros*2); // Go to top of board
+    moveTo(X_RANGE_STEPS, Y_RANGE_STEPS, speedMicros*2); // Top right corner
     delay(100);
     digitalWrite(magnet, LOW);
   }
-  moveToSquare(move.fromCol, move.fromRow);
+  moveToSquare(move.fromCol, move.fromRow, speedMicros/2);
   delay(100);
   digitalWrite(magnet, HIGH);
   delay(100);
-  moveToSquare(move.toCol, move.toRow);
+  moveToSquare(move.toCol, move.toRow, speedMicros*2);
   delay(100);
   digitalWrite(magnet, LOW);
   delay(100);
