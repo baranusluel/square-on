@@ -55,7 +55,7 @@ We laid cork on the top side of the box to make it beautiful and keep the acryli
 ### Electronics
 #### Overall Architecture
 ![Electrical diagram](assets/image17.png)
-![Electrical labels](assets/image19.jpg)
+![Electrical labels](assets/image19.png)
 
 #### Electromagnet
 Fortunate to have a seasoned electromagnetics student on our team, we learned that one can easily build an electromagnet at home using only a screw and wire. However, after several iterations, we only succeeded in barely picking up a ferrous washer off the table with our weak magnet — not nearly enough to reliably move any chess pieces. Ultimately, we ordered an electromagnet from Amazon. 
