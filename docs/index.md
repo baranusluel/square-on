@@ -6,12 +6,12 @@
 
 ## Overview
 
-We built a chess-playing robot. It drags pieces with an electromagnet under the board. Players can interface with it through a web UI. It is big. We had to make it big to make sure that the knights could move in between other pieces. 
+We built an automatic chess-playing robot, inspired by what is as of today [the world’s second smartest chess board - Square Off](https://squareoffnow.com/). It drags pieces with an electromagnet under the board. Players can interface with it through a web UI. It is big.
 
 ## Engineering
 ### Mechanical Hardware 
 #### X-Y bot
-Inspired by what is now [the world’s second smartest chess board](https://squareoffnow.com/), we knew that in our design, the pieces must move seemingly on their own. Our solution was to use an X-Y cartesian actuator to move the pieces from underneath the board by using an electromagnet. The standard chess set that we ordered from Amazon was made of wood, so we glued ferrous washers to the bottom of the pieces. 
+We knew that in our design the pieces must move seemingly on their own. Our solution was to use an X-Y cartesian actuator to move the pieces from underneath the board by using an electromagnet. The standard chess set that we ordered from Amazon was made of wood, so we glued ferrous washers to the bottom of the pieces. 
 
 The most straightforward naive design for a two-axis actuator can suffer from instability due to the uneven belt attachment and the weight of a motor on a moving carriage.
 
@@ -40,11 +40,13 @@ After installing the NEMA17 stepper motors and pulleys, we passed around two tim
 ![XYbot complete1](assets/image10.jpg)
 ![XYbot complete2](assets/image12.jpg)
 
-The X-Y bot was complete. 
+The X-Y bot construction was complete.
 
 #### Chess board
 For the chess board we chose to use a transparent sheet of acrylic to showcase the inner mechanism. We used a laser cutter, to engrave the squares on the acrylic. Here it is on top of the other parts.
 ![Acrylic Chessboard](assets/image23.jpg)
+
+We chose to make the chess board and robot itself fairly large so that there would be enough space between each chess piece to allow a knight to pass in between.
 
 #### The box
 We used another 4x2 sheet for the box. The sides were connected with nails and reinforced with hot glue. L-brackets attach the top and bottom of the box as well as hold the frame of the X-Y bot.
