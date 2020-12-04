@@ -82,35 +82,35 @@ Although it could be feasible to interface with the peripherals from the Pi dire
 ![Software diagram](assets/image23.jpg)
 
 ### Future work 
-- [ ] Sense user moves.
-- [ ] Voice controlled user moves.
-- [ ] Power the pi using a switching voltage regulator.
-- [ ] Transfer the electronics to a PCB.
+[ ] Sense user moves.
+[ ] Voice controlled user moves.
+[ ] Power the pi using a switching voltage regulator.
+[ ] Transfer the electronics to a PCB.
 
 ### Components List
 
-Item | Quantity
----------------
-1/4 in. x 2 ft. x 4 ft. Plywood | 3
-0.093 in. x 18 in. x 24. in Clear Acrylic Sheet | 1
-NEMA17 Stepper Motor | 2
-Pololu A4998 Stepper Driver | 2
-GT2 Timing Belt 6mm x 5 meters | 1
-20 Teeth 8mm Bore Belt Pulley | 2
-608 Ball Bearing | 8
-LM8UU Linear Bearing | 5
-8mm x 6m Hardened Chrome Smooth Rod | 2
-8mm x 5m Hardened Chrome Smooth Rod | 2
-Mechanical Endstop Limit Switch | 2
-Wooden Chess Piece Set | 1
-uxcell 12VDC 200N Electromagnet | 1
-5V Relay for 220V 5A | 1
-Raspberry Pi 2 Model B | 1
-USB Wifi Dongle | 1
-Arduino Uno | 1
-Breadboard | 1
-AC 110V/220V to DC 12V 360W Power Supply | 1
-L Bracket | 16
-18 in. x 4 ft. Adhesive Cork Liner | 1
-M3 bolt / nut / washer fasteners | X
-M8 bolt / nut / washer fasteners | X
+| Item | Quantity |
+|------|----------|
+| 1/4 in. x 2 ft. x 4 ft. Plywood | 3 |
+| 0.093 in. x 18 in. x 24. in Clear Acrylic Sheet | 1 |
+| NEMA17 Stepper Motor | 2 |
+| Pololu A4998 Stepper Driver | 2 |
+| GT2 Timing Belt 6mm x 5 meters | 1 |
+| 20 Teeth 8mm Bore Belt Pulley | 2 |
+| 608 Ball Bearing | 8 |
+| LM8UU Linear Bearing | 5 |
+| 8mm x 6m Hardened Chrome Smooth Rod | 2 |
+| 8mm x 5m Hardened Chrome Smooth Rod | 2 |
+| Mechanical Endstop Limit Switch | 2 |
+| Wooden Chess Piece Set | 1 |
+| uxcell 12VDC 200N Electromagnet | 1 |
+| 5V Relay for 220V 5A | 1 |
+| Raspberry Pi 2 Model B | 1 |
+| USB Wifi Dongle | 1 |
+| Arduino Uno | 1 |
+| Breadboard | 1 |
+| AC 110V/220V to DC 12V 360W Power Supply | 1 |
+| L Bracket | 16 |
+| 18 in. x 4 ft. Adhesive Cork Liner | 1 |
+| M3 bolt / nut / washer fasteners | X |
+| M8 bolt / nut / washer fasteners | X |
