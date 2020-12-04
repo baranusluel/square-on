@@ -4,6 +4,9 @@
 #define Y_RANGE_STEPS 2350*4
 // Speed of robot, as delay between steps
 #define speedMicros 500
+// Number of steps to overshoot target by when moving a piece,
+// to combat lagging piece effect depending on size of magnet.
+#define OVERSHOOT_STEPS 250
 
 // Stepper driver pins
 #define stepB 2
@@ -52,9 +55,9 @@ int curY = 0;
 
 void zero();
 void zeroAxis(AXIS axis);
-void moveTo(int newX, int newY, int speedDelay);
+void moveTo(int newX, int newY, int speedDelay, bool isKnight, bool isCapture, bool overshoot);
 void moveSteps(AXIS axis, int steps, int speedDelay);
-void moveToSquare(int col, int row, int speedDelay);
+void moveToSquare(int col, int row, int speedDelay, bool isKnight, bool isCapture, bool overshoot);
 void copyBoard(char fromBoard[8][8], char toBoard[8][8]);
 void scanBoardChanges();
 
@@ -140,21 +143,56 @@ void zeroAxis(AXIS axis) {
   }
 }
 
-void moveTo(int newX, int newY, int speedDelay) {
+void moveTo(int newX, int newY, int speedDelay, bool isKnight, bool isCapture, bool overshoot) {
   // Clamp coordinates to valid range (0 to max range)
   newX = max(min(newX, X_RANGE_STEPS), 0);
   newY = max(min(newY, Y_RANGE_STEPS), 0);
   // Move to desired location
   if (abs(newX - curX) == abs(newY - curY)) {
     // If perfectly diagonal motion, just move diagonally
-    if (newX - curX == newY - curY) // If same sign
-      moveSteps(MAIN_DIAG, 2*(newX - curX), speedDelay);
-    else // Opposite signs
-      moveSteps(ANTI_DIAG, 2*(newX - curX), speedDelay);
+    if (newX - curX == newY - curY) { // If same sign
+      int overshootOffset = overshoot * OVERSHOOT_STEPS * (newX - curX > 0 ? 1 : -1);
+      overshootOffset = max(min(overshootOffset + newX, X_RANGE_STEPS), 0) - newX;
+      moveSteps(MAIN_DIAG, 2*(newX - curX + overshootOffset), speedDelay);
+      moveSteps(MAIN_DIAG, -2*overshootOffset, speedDelay);
+    } else { // Opposite signs
+      int overshootOffset = overshoot * OVERSHOOT_STEPS * (newX - curX > 0 ? 1 : -1);
+      overshootOffset = max(min(overshootOffset + newX, X_RANGE_STEPS), 0) - newX;
+      moveSteps(ANTI_DIAG, 2*(newX - curX + overshootOffset), speedDelay);
+      moveSteps(ANTI_DIAG, -2*overshootOffset, speedDelay);
+    }
   } else {
-    // Otherwise move in X and Y separately, Manhattan-distance
-    moveSteps(X, newX - curX, speedDelay);
-    moveSteps(Y, newY - curY, speedDelay);
+    // Otherwise move in X and Y separately, Manhattan-distance.
+    // Check for special cases (knight movement and capturing) that require extra
+    // offsets to move halfway between squares and avoid collisions.
+    if (isKnight) {
+      // If knight moving further right/left than up/down
+      if (abs(newX - curX) > abs(newY - curY)) {
+        moveSteps(Y, (newY - curY) / 2, speedDelay);
+        moveSteps(X, newX - curX, speedDelay);
+        int overshootOffset = overshoot * OVERSHOOT_STEPS * (newY - curY > 0 ? 1 : -1);
+        moveSteps(Y, (newY - curY) / 2 + overshootOffset, speedDelay);
+        moveSteps(Y, -overshootOffset, speedDelay);
+      } else {
+        moveSteps(X, (newX - curX) / 2, speedDelay);
+        moveSteps(Y, newY - curY, speedDelay);
+        int overshootOffset = overshoot * OVERSHOOT_STEPS * (newX - curX > 0 ? 1 : -1);
+        overshootOffset = max(min(overshootOffset + newX, X_RANGE_STEPS), 0) - newX;
+        moveSteps(X, (newX - curX) / 2 + overshootOffset, speedDelay);
+        moveSteps(X, -overshootOffset, speedDelay);
+      }
+    } else if (isCapture) {
+      // If on right half of board, offset half a square to left, otherwise to right.
+      int offsetSign = (curX > X_RANGE_STEPS / 2) ? -1 : 1;
+      moveSteps(X, newX - curX + (offsetSign * 1140 / 2), speedDelay);
+      moveSteps(Y, newY - curY, speedDelay);
+      moveSteps(X, -(offsetSign * 1140 / 2), speedDelay);
+    } else {
+      moveSteps(X, newX - curX, speedDelay);
+      int overshootOffset = overshoot * OVERSHOOT_STEPS * (newY - curY > 0 ? 1 : -1);
+      moveSteps(Y, newY - curY + overshootOffset, speedDelay);
+      moveSteps(Y, -overshootOffset, speedDelay);
+    }
   }
   // Update current position
   curX = newX;
@@ -162,7 +200,11 @@ void moveTo(int newX, int newY, int speedDelay) {
 }
 
 void moveSteps(AXIS axis, int steps, int speedDelay) {
-  // Set stepper motor directions
+  // Set stepper motor directions.
+  // See explanation here: http://corexy.com/theory.html
+  // Note that our A and B motors are switched,
+  // and setting direction HIGH represents negative direction,
+  // compared to above reference.
   switch (axis) {
     case X:
       digitalWrite(dirB, steps < 0);
@@ -191,11 +233,11 @@ void moveSteps(AXIS axis, int steps, int speedDelay) {
   }
 }
 
-void moveToSquare(int col, int row, int speedDelay) {
+void moveToSquare(int col, int row, int speedDelay, bool isKnight, bool isCapture, bool overshoot) {
   // Calibrated empirically according to square spacing and offsets on board
   moveTo(col*1140-100,
          (7-row)*1140+376, /* approximately (0.9-0.04)/7.0*Y_RANGE_STEPS */
-         speedDelay);
+         speedDelay, isKnight, isCapture, overshoot);
 }
 
 void copyBoard(char fromBoard[8][8], char toBoard[8][8]) {
@@ -255,23 +297,22 @@ void scanBoardChanges() {
   Serial.print(move.toRow);
   Serial.println(move.toCol);
 
-  // TODO: Move slower when moving a piece
-
   Serial.println("moving");
   if (move.pieceCaptured != 0) {
-    moveToSquare(move.toCol, move.toRow, speedMicros/2);
+    moveToSquare(move.toCol, move.toRow, speedMicros/2, false, false, false);
     delay(100);
     digitalWrite(magnet, HIGH);
-    moveTo(curX, Y_RANGE_STEPS, speedMicros*2); // Go to top of board
-    moveTo(X_RANGE_STEPS, Y_RANGE_STEPS, speedMicros*2); // Top right corner
+    moveTo(curX, Y_RANGE_STEPS, speedMicros*2, false, true, false); // Go to top of board
+    moveTo(X_RANGE_STEPS, Y_RANGE_STEPS, speedMicros*2, false, false, false); // Top right corner
     delay(100);
     digitalWrite(magnet, LOW);
   }
-  moveToSquare(move.fromCol, move.fromRow, speedMicros/2);
+  moveToSquare(move.fromCol, move.fromRow, speedMicros/2, false, false, false);
   delay(100);
   digitalWrite(magnet, HIGH);
   delay(100);
-  moveToSquare(move.toCol, move.toRow, speedMicros*2);
+  moveToSquare(move.toCol, move.toRow, speedMicros*2,
+      move.piece == 'n' || move.piece == 'N', false, true);
   delay(100);
   digitalWrite(magnet, LOW);
   delay(100);
