@@ -10,7 +10,10 @@
 #define stopY 7
 #define magnet 9
 
-enum AXIS { X, Y };
+// Directions: X is horizontal, Y is vertical,
+// main diagonal is / direction (from origin),
+// anti diagonal is \ direction.
+enum AXIS { X, Y, MAIN_DIAG, ANTI_DIAG};
 
 void zero();
 void zeroAxis(AXIS axis);
@@ -49,7 +52,7 @@ void loop() {
         float x = Serial.parseFloat();
         float y = Serial.parseFloat();
         if (Serial.read() != '\n') continue; // valid EOL
-        moveTo(x*X_RANGE_STEPS, y*Y_RANGE_STEPS);
+        moveTo(x, y);
       }
     }
   }
@@ -91,8 +94,17 @@ void moveTo(int newX, int newY) {
   newX = max(min(newX, X_RANGE_STEPS), 0);
   newY = max(min(newY, Y_RANGE_STEPS), 0);
   // Move to desired location
-  moveSteps(X, newX - curX);
-  moveSteps(Y, newY - curY);
+  if (abs(newX - curX) == abs(newY - curY)) {
+    // If perfectly diagonal motion, just move diagonally
+    if (newX - curX == newY - curY) // If same sign
+      moveSteps(MAIN_DIAG, 2*(newX - curX));
+    else // Opposite signs
+      moveSteps(ANTI_DIAG, 2*(newX - curX));
+  } else {
+    // Otherwise move in X and Y separately, Manhattan-distance
+    moveSteps(X, newX - curX);
+    moveSteps(Y, newY - curY);
+  }
   // Update current position
   curX = newX;
   curY = newY;
@@ -100,14 +112,27 @@ void moveTo(int newX, int newY) {
 
 void moveSteps(AXIS axis, int steps) {
   // Set stepper motor directions
-  digitalWrite(dirB, steps < 0);
-  digitalWrite(dirA,
-      (axis == Y && steps > 0) || (axis == X && steps < 0));
+  switch (axis) {
+    case X:
+      digitalWrite(dirB, steps < 0);
+      digitalWrite(dirA, steps < 0);
+      break;
+    case Y:
+      digitalWrite(dirB, steps < 0);
+      digitalWrite(dirA, steps > 0);
+      break;
+    case MAIN_DIAG:
+      digitalWrite(dirB, steps < 0);
+      break;
+    case ANTI_DIAG:
+      digitalWrite(dirA, steps < 0);
+      break;
+  }
       
   // Pulse given number of steps
   for (int i = 0; i < abs(steps); i++) {
-    digitalWrite(stepA, HIGH);
-    digitalWrite(stepB, HIGH);
+    digitalWrite(stepA, axis != MAIN_DIAG ? HIGH : LOW);
+    digitalWrite(stepB, axis != ANTI_DIAG ? HIGH : LOW);
     delayMicroseconds(speedMicros);
     digitalWrite(stepA, LOW);
     digitalWrite(stepB, LOW);
