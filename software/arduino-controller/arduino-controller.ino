@@ -167,8 +167,8 @@ void moveSteps(AXIS axis, int steps) {
 }
 
 void moveToSquare(int col, int row) {
-  moveTo((float)col/7.0*X_RANGE_STEPS,
-         ((7-row)*(0.9-0.04)/7.0+0.04)*Y_RANGE_STEPS);
+  moveTo((float)col*1140-100 /* approximately X_RANGE_STEPS/7.0 */,
+         (7-row)*1140+376); /* approximately (0.9-0.04)/7.0*Y_RANGE_STEPS */
 }
 
 void copyBoard(char fromBoard[8][8], char toBoard[8][8]) {
@@ -228,7 +228,18 @@ void scanBoardChanges() {
   Serial.print(move.toRow);
   Serial.println(move.toCol);
 
+  // TODO: Move slower when moving a piece
+
   Serial.println("moving");
+  if (move.pieceCaptured != 0) {
+    moveToSquare(move.toCol, move.toRow);
+    delay(100);
+    digitalWrite(magnet, HIGH);
+    moveTo(curX, Y_RANGE_STEPS); // Go to top of board
+    moveTo(X_RANGE_STEPS, Y_RANGE_STEPS); // Top right corner
+    delay(100);
+    digitalWrite(magnet, LOW);
+  }
   moveToSquare(move.fromCol, move.fromRow);
   delay(100);
   digitalWrite(magnet, HIGH);
@@ -241,4 +252,3 @@ void scanBoardChanges() {
   // Update current board buffer
   copyBoard(newBoard, currentBoard);
 }
-
