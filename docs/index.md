@@ -11,55 +11,56 @@ We built a chess-playing robot. It drags pieces with an electromagnet under the 
 #### X-Y bot
 Inspired by what is now [the world’s second smartest chess board](https://squareoffnow.com/), we knew that in our design, the pieces must move seemingly on their own. Our solution was to use an X-Y cartesian actuator to move the pieces from underneath the board by using an electromagnet. The standard chess set that we ordered from Amazon was made of wood, so we glued ferrous washers to the bottom of the pieces. 
 
-The most straightforward naive design for a two-axis actuator can suffer from instability due to the uneven belt attachment and the weight of a motor on a moving carriage; therefore, we decided to go with a more complex, but significantly more robust [CoreXY design](http://corexy.com/theory.html). This proved to be a good decision down the road as even with our imperfectly manufactured wooden frame, we could achieve highly precise motion.
+The most straightforward naive design for a two-axis actuator can suffer from instability due to the uneven belt attachment and the weight of a motor on a moving carriage.
 
-<img src="assets/image1.jpg" alt="Naive X-Y design" width="100"/>
-![CoreXY design](assets/image2.jpg)
+![Naive X-Y design](assets/image9.png)
 
-We also had to adjust the control for the CoreXY design: 
-![CoreXY equations](assets/image3.jpg)
+Therefore, we decided to go with a more complex, but significantly more robust [CoreXY design](http://corexy.com/theory.html). This proved to be a good decision down the road as even with our imperfectly manufactured wooden frame, we could achieve highly precise motion. We also had to adjust the control according to the CoreXY design equations:
 
-For the outer frame of the X-Y bot and the Y-carriage, we used a single 4x2 sheet of wood. They were cut out by hand with a router.
-![External frame](assets/image4.jpg)
-![External frame + Y carriage](assets/image4.png)
-![External frame + X carriage](assets/image5.jpg)
+![CoreXY design](assets/image13.png)
+
+For the outer frame of the X-Y bot and the Y-carriage, we used a single 4x2 sheet of wood. They were cut out by hand with a jigsaw.
+
+![External frame](assets/image6.jpg)
+![External frame + Y carriage](assets/image3.jpg)
+![External frame + X carriage](assets/image2.jpg)
 
 We developed an ad hoc solution for securing the belt system. A set of washers and nuts were used to keep the idlers (rotary ball bearings) at a certain height on machine screws. The larger washers ensured that the belt wouldn’t come off.
-![Idlers](assets/image6.jpg)
+![Idlers](assets/image1.jpg)
 
 We mounted the carriages on smooth rods with standard LM8UU linear bearings. The bearings attached to carriages with zip ties, an easy and surprisingly secure solution. We cut out wooden mounting blocks for securing the smooth rods and hot glued them to the external frame and the Y-carriage. Since most easily accessible smooth rods are intended for use in 3D printers, we struggled to find rods of sufficient length. To compensate, we made the mounting blocks stick out slightly from under the frame. 
-![XYbot assembly](assets/image7.png)
+![XYbot assembly](assets/image16.jpg)
 
-![Smooth rods](assets/image8.jpg)
+![Smooth rods](assets/image18.jpg)
 
 After installing the NEMA17 stepper motors and pulleys, we passed around two timing belts, tightened them, and zip tied them to the small X-carriage. 
 
-![XYbot complete1](assets/image9.jpg)
-![XYbot complete2](assets/image10.jpg)
+![XYbot complete1](assets/image10.jpg)
+![XYbot complete2](assets/image12.jpg)
 
 The X-Y bot was complete. 
 
 #### Chess board
 For the chess board we chose to use a transparent sheet of acrylic to showcase the inner mechanism. We used a laser cutter, to engrave the squares on the acrylic. Here it is on top of the other parts.
-![Acrylic Chessboard](assets/image11.jpg)
+![Acrylic Chessboard](assets/image23.jpg)
 
 #### The box
 We used another 4x2 sheet for the box. The sides were connected with nails and reinforced with hot glue. L-brackets attach the top and bottom of the box as well as hold the frame of the X-Y bot.
-![Box 1](assets/image12.jpg)
-![Box 2](assets/image13.jpg)
+![Box 1](assets/image8.jpg)
+![Box 2](assets/image15.jpg)
 ![Box 3](assets/image14.jpg)
 We laid cork on the top side of the box to make it beautiful and keep the acrylic board in place. We still wanted the board to be removable for easy access to the electronics inside the box. 
-![Cork](assets/image15.jpg)
+![Cork](assets/image4.jpg)
 
 ### Electronics
 #### Overall Architecture
-![Electrical diagram](assets/image17.jpg)
-![Electrical labels](assets/image18.jpg)
+![Electrical diagram](assets/image17.png)
+![Electrical labels](assets/image19.jpg)
 
 #### Electromagnet
 Fortunate to have a seasoned electromagnetics student on our team, we learned that one can easily build an electromagnet at home using only a screw and wire. However, after several iterations, we only succeeded in barely picking up a ferrous washer off the table with our weak magnet — not nearly enough to reliably move any chess pieces. Ultimately, we ordered an electromagnet from Amazon. 
-![Electromagnet](assets/image19.jpg)
-![DIY electromagnet](assets/image20.jpg)
+![Electromagnet](assets/image5.png)
+![DIY electromagnet](assets/image11.jpg)
 
 #### Powering the Pi
 Almost all of the components including the Arduino, the electromagnet, and the steppers could be powered with 12 V, and luckily we had a reliable 12V power supply on hand. Raspberry Pi however required 5V. We tried employing a linear voltage regulator, but it only lasted for a short time before overheating. As a temporary solution, we resorted to using a portable phone charger to power the Pi until we get a reliable 12V - 5V voltage converter. 
@@ -67,8 +68,8 @@ Almost all of the components including the Arduino, the electromagnet, and the s
 #### Detecting Human Moves
 Our original vision included a human player moving their pieces by hand and a robot opponent responding by moving its pieces with an electromagnet. But we faced a grand challenge: How can we know where the human player has put their piece. We considered several approaches: mechanical switches, RFID tags for pieces, ambient light sensors under each square, and computer vision. Computer vision seemed to be the most feasible approach, but it would have required an addition of a structure overlooking the board to get a reliable angle. We wanted to keep the chess board--which was in fact closer to a chess table at this point--self contained, so we opted for a keypad-like matrix of conductive tape. Since each piece had a metal washer on the bottom, it would short the row and column when placed in the center of a square. 
 
-![Board with tape 1](assets/image21.jpg)
-![Board with tape 2](assets/image22.jpg)
+![Board with tape 1](assets/image22.jpg)
+![Board with tape 2](assets/image21.jpg)
 
 Although sound in theory, this plan did not work out in practice. The pieces failed to make reliable connections with both the row and column tape pieces, so we couldn’t always get an accurate reading of the players position. This forced us to readjust our vision. We pivoted to a web-based interface where the human player can make moves against the machine and see both their moves and the machine’s moves reflected on the physical chessboard. Now, we had no problems obtaining the board state since it was inputted through a web GUI and stored on the server. 
 
@@ -79,13 +80,13 @@ On every move, the Pi sends an updated board state to the Arduino over a serial 
 
 Although it could be feasible to interface with the peripherals from the Pi directly, we chose to use an Arduino as a broker because the non-RTOS Linux OS running on the Pi could potentially be too slow to pulse the stepper motors at an appropriate and consistent rate. Ensuring the fluid motion of the pieces required precise I/O time requirements of 250 μs. 
 
-![Software diagram](assets/image23.jpg)
+![Software diagram](assets/image7.png)
 
 ### Future work 
-[ ] Sense user moves.
-[ ] Voice controlled user moves.
-[ ] Power the pi using a switching voltage regulator.
-[ ] Transfer the electronics to a PCB.
+- [ ] Sense user moves.  
+- [ ] Voice controlled user moves.  
+- [ ] Power the pi using a switching voltage regulator.  
+- [ ] Transfer the electronics to a PCB.
 
 ### Components List
 
