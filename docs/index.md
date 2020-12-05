@@ -4,6 +4,8 @@
 
 #### [Source Code](https://github.com/baranusluel/square-on/tree/main/software)
 
+<iframe width="560" height="315" src="https://www.youtube.com/embed/3NJV737BzyU" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
 ## Overview
 
 We built an automatic chess-playing robot, inspired by what is as of today [the world’s second smartest chess board - Square Off](https://squareoffnow.com/). It drags pieces with an electromagnet under the board. Players can interface with it through a web UI. It is big.
