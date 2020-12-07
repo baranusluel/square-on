@@ -4,7 +4,9 @@
 
 #### [Source Code](https://github.com/baranusluel/square-on/tree/main/software)
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/3NJV737BzyU" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<div class="videoWrapper">
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/3NJV737BzyU" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
 
 ![Square On](assets/squareon.jpg)
 
